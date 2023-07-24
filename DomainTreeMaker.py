@@ -1,25 +1,50 @@
+import os
 import sys
-import pyhmmer
+from pyhmmer import easel, plan7, hmmer
 from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node
 
 
-# for now, we are assuming the input file contains amino acid sequences in fasta
+# for now, we are assuming the input file contains aligned amino acid sequences in fasta
 def main():
-    alphabet = pyhmmer.easel.Alphabet.amino()
+    # unalign MSA
+    with open("input_files/nematode.fasta") as msa_file:
+        write_unaligned_sequences(str(msa_file.read()))
+
+    alphabet = easel.Alphabet.amino()
 
     # loading the alignment
-    with pyhmmer.easel.MSAFile("input_files/nematode.fasta", format="afa", digital=True, alphabet=alphabet) as msa_file:
-        msa = list(msa_file.read().sequences)
+    with easel.SequenceFile("unaligned_toy.fasta", format="fasta", digital=True, alphabet=alphabet) as seq_file:
+        sequences = seq_file.read_block()
 
     # load all the HMMs from an HMM file into a list
-    with pyhmmer.plan7.HMMFile("Pfam-A.hmm") as hmm_file:
+    with plan7.HMMFile("Pfam-A.hmm") as hmm_file:
         hmm = list(hmm_file)
 
-    all_hits = list(pyhmmer.hmmer.hmmscan(msa, hmm, cpus=0))
+    all_hits = list(hmmer.hmmscan(sequences, hmm, cpus=0))
 
     with open("toy_topHits.txt", "wb") as output:
         for hits in all_hits:
             hits.write(output, "domains", True)
+
+    # clean up temp files
+    delete_file("unaligned_toy.fasta")
+
+
+def write_unaligned_sequences(msa):
+    unaligned_seqs = msa.replace("-", "")
+
+    with open("unaligned_toy.fasta", "w") as out_file:
+        out_file.write(unaligned_seqs)
+
+
+def delete_file(filename):
+    try:
+        os.remove(filename)
+        print(f"File '{filename}' has been deleted as part of clean-up.")
+    except FileNotFoundError:
+        print(f"File '{filename}' not found, so it could not be deleted.")
+    except Exception as e:
+        print(f"An error occurred while trying to delete the file '{filename}': {e}")
 
 
 if __name__ == "__main__":
