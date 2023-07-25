@@ -61,10 +61,10 @@ def parse_hits_file(input_file):
             words = line.split()
             domain = Domain(words[0], words[3], words[17], words[18])  # coordinates are assumed aligned
             if domain.parent != current_parent:
-                all_domains[domain.parent] = [domain]
+                all_domains[domain.parent] = [domain.get_motif_format()]
                 current_parent = domain.parent
             else:
-                all_domains[domain.parent].append(domain)
+                all_domains[domain.parent].append(domain.get_motif_format())
 
     # delete_file("toy_topHits.txt")
 
