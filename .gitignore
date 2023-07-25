@@ -2,3 +2,5 @@
 input_files
 *.png
 *.hmm
+__pycache__/
+.DS_Store

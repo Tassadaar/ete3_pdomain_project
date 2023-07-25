@@ -2,6 +2,44 @@ import os
 import sys
 from pyhmmer import easel, plan7, hmmer
 from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node
+from Domain import Domain
+
+
+def write_unaligned_sequences(msa):
+    unaligned_seqs = msa.replace("-", "")
+
+    with open("unaligned_toy.fasta", "w") as out_file:
+        out_file.write(unaligned_seqs)
+
+
+def delete_file(filename):
+    try:
+        os.remove(filename)
+        print(f"File '{filename}' has been deleted as part of clean-up.")
+    except FileNotFoundError:
+        print(f"File '{filename}' not found, so it could not be deleted.")
+    except Exception as e:
+        print(f"An error occurred while trying to delete the file '{filename}': {e}")
+
+
+def parse_hits_file(input_file):
+    domains = []
+
+    with open(input_file, "r") as hits_file:
+        try:
+
+            for line in hits_file:
+
+                if line[0] == "#":  # skipping headers
+                    continue
+
+                words = line.split()
+                domains.append(Domain(words[0], words[3], words[17], words[18]))  # coordinates are assumed aligned
+
+        except FileNotFoundError:
+            print(f"File {input_file} not found!")
+
+    return domains
 
 
 # for now, we are assuming the input file contains aligned amino acid sequences in fasta
@@ -28,23 +66,6 @@ def main():
 
     # clean up temp files
     delete_file("unaligned_toy.fasta")
-
-
-def write_unaligned_sequences(msa):
-    unaligned_seqs = msa.replace("-", "")
-
-    with open("unaligned_toy.fasta", "w") as out_file:
-        out_file.write(unaligned_seqs)
-
-
-def delete_file(filename):
-    try:
-        os.remove(filename)
-        print(f"File '{filename}' has been deleted as part of clean-up.")
-    except FileNotFoundError:
-        print(f"File '{filename}' not found, so it could not be deleted.")
-    except Exception as e:
-        print(f"An error occurred while trying to delete the file '{filename}': {e}")
 
 
 if __name__ == "__main__":
