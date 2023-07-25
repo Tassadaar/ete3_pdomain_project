@@ -1,5 +1,6 @@
 import os
 import sys
+from Bio import SeqIO
 from pyhmmer import easel, plan7, hmmer
 from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node
 from Domain import Domain
@@ -80,9 +81,18 @@ def main():
 
         tree = Tree("input_files/nematode_CH.tree")
         leaves = tree.get_leaf_names()
+        all_seqs = {}
 
-        for domain in domains["HONEYBEE"]:
-            print(domain)
+        for seq_record in SeqIO.parse("input_files/nematode.fasta", "fasta"):
+            all_seqs[seq_record.id] = str(seq_record.seq)
+
+        for leaf in leaves:
+            seq_face = SeqMotifFace(all_seqs[leaf], seq_format="line", motifs=domains[leaf])
+            (tree & leaf).add_face(seq_face, 0, "aligned")
+
+        ts = TreeStyle()
+        ts.show_scale = False
+        tree.render("toy.png", h=50 * len(leaves), tree_style=ts)
 
     except FileNotFoundError:
         print(f"File not found!")
