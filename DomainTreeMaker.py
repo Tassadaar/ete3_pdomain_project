@@ -48,35 +48,44 @@ def generate_hits_file():
 
 
 def parse_hits_file(input_file):
-    domains = []
+    all_domains = {}
 
     with open(input_file, "r") as hits_file:
-        try:
 
-            for line in hits_file:
+        current_parent = None
+        for line in hits_file:
 
-                if line[0] == "#":  # skipping headers
-                    continue
+            if line[0] == "#":  # skipping headers
+                continue
 
-                words = line.split()
-                domains.append(Domain(words[0], words[3], words[17], words[18]))  # coordinates are assumed aligned
-
-        except FileNotFoundError:
-            print(f"File {input_file} not found!")
+            words = line.split()
+            domain = Domain(words[0], words[3], words[17], words[18])  # coordinates are assumed aligned
+            if domain.parent != current_parent:
+                all_domains[domain.parent] = [domain]
+                current_parent = domain.parent
+            else:
+                all_domains[domain.parent].append(domain)
 
     # delete_file("toy_topHits.txt")
 
-    return domains
+    return all_domains
 
 
 # for now, we are assuming the input file contains aligned amino acid sequences in fasta
 def main():
-    # generate_hits_file()
+    try:
+        # generate_hits_file()
 
-    domains = parse_hits_file("toy_topHits.txt")
+        domains = parse_hits_file("toy_topHits.txt")
 
-    for domain in domains:
-        print(domain)
+        tree = Tree("input_files/nematode_CH.tree")
+        leaves = tree.get_leaf_names()
+
+        for domain in domains["HONEYBEE"]:
+            print(domain)
+
+    except FileNotFoundError:
+        print(f"File not found!")
 
 
 if __name__ == "__main__":
