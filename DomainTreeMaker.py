@@ -6,8 +6,8 @@ from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node
 from Domain import Domain
 
 
-def write_unaligned_sequences(msa):
-    unaligned_seqs = msa.replace("-", "")
+def write_unaligned_sequences(sa):
+    unaligned_seqs = sa.replace("-", "")
 
     with open("unaligned_toy.fasta", "w") as out_file:
         out_file.write(unaligned_seqs)
@@ -23,10 +23,12 @@ def delete_file(filename):
         print(f"An error occurred while trying to delete the file '{filename}': {e}")
 
 
-def generate_hits_file():
-    # unalign MSA
-    with open("input_files/nematode.fasta") as msa_file:
-        write_unaligned_sequences(str(msa_file.read()))
+def generate_hits_file(sa):
+    hits_file = "toy_topHits.txt"
+
+    # unalign SA
+    with open(sa) as sa_file:
+        write_unaligned_sequences(str(sa_file.read()))
 
     alphabet = easel.Alphabet.amino()
 
@@ -40,12 +42,14 @@ def generate_hits_file():
 
     all_hits = list(hmmer.hmmscan(sequences, hmm, cpus=0))
 
-    with open("toy_topHits.txt", "wb") as output:
+    with open(hits_file, "wb") as output:
         for hits in all_hits:
             hits.write(output, "domains", True)
 
     # clean up temp files
     delete_file("unaligned_toy.fasta")
+
+    return hits_file
 
 
 def parse_hits_file(input_file):
@@ -75,15 +79,18 @@ def parse_hits_file(input_file):
 # for now, we are assuming the input file contains aligned amino acid sequences in fasta
 def main():
     try:
-        # generate_hits_file()
+        sa_file = "input_files/toy.fasta"
+        tree_file = "input_files/toy.tree"
 
-        domains = parse_hits_file("toy_topHits.txt")
+        hits_file = generate_hits_file(sa_file)
 
-        tree = Tree("input_files/nematode_CH.tree")
+        domains = parse_hits_file(hits_file)
+
+        tree = Tree(tree_file)
         leaves = tree.get_leaf_names()
         all_seqs = {}
 
-        for seq_record in SeqIO.parse("input_files/nematode.fasta", "fasta"):
+        for seq_record in SeqIO.parse(sa_file, "fasta"):
             all_seqs[seq_record.id] = str(seq_record.seq)
 
         for leaf in leaves:
