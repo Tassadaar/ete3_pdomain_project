@@ -22,28 +22,7 @@ def delete_file(filename):
         print(f"An error occurred while trying to delete the file '{filename}': {e}")
 
 
-def parse_hits_file(input_file):
-    domains = []
-
-    with open(input_file, "r") as hits_file:
-        try:
-
-            for line in hits_file:
-
-                if line[0] == "#":  # skipping headers
-                    continue
-
-                words = line.split()
-                domains.append(Domain(words[0], words[3], words[17], words[18]))  # coordinates are assumed aligned
-
-        except FileNotFoundError:
-            print(f"File {input_file} not found!")
-
-    return domains
-
-
-# for now, we are assuming the input file contains aligned amino acid sequences in fasta
-def main():
+def generate_hits_file():
     # unalign MSA
     with open("input_files/nematode.fasta") as msa_file:
         write_unaligned_sequences(str(msa_file.read()))
@@ -66,6 +45,38 @@ def main():
 
     # clean up temp files
     delete_file("unaligned_toy.fasta")
+
+
+def parse_hits_file(input_file):
+    domains = []
+
+    with open(input_file, "r") as hits_file:
+        try:
+
+            for line in hits_file:
+
+                if line[0] == "#":  # skipping headers
+                    continue
+
+                words = line.split()
+                domains.append(Domain(words[0], words[3], words[17], words[18]))  # coordinates are assumed aligned
+
+        except FileNotFoundError:
+            print(f"File {input_file} not found!")
+
+    # delete_file("toy_topHits.txt")
+
+    return domains
+
+
+# for now, we are assuming the input file contains aligned amino acid sequences in fasta
+def main():
+    # generate_hits_file()
+
+    domains = parse_hits_file("toy_topHits.txt")
+
+    for domain in domains:
+        print(domain)
 
 
 if __name__ == "__main__":
