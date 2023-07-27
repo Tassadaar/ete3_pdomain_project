@@ -71,6 +71,10 @@ def parse_hits_file(input_file):
     return all_domains
 
 
+def generate_domain_layout(start, end, name):
+    return [start, end, "()", 100, 10, "black", "rgradient:blue", f"arial|7|white|{name}"]
+
+
 # for now, we are assuming the input file contains aligned amino acid sequences in fasta
 def main():
     try:
@@ -85,13 +89,13 @@ def main():
             for hit in hits:
                 for doamin in hit.domains:
                     if hits.query_name.decode() not in domains.keys():
-                        domains[hits.query_name.decode()] = [[int(doamin.env_from), int(doamin.env_to),
-                                                         "()", 100, 10, "black", "rgradient:blue",
-                                                         f"arial|7|white|{hit.name.decode()}"]]
+                        domains[hits.query_name.decode()] = [generate_domain_layout(doamin.env_from,
+                                                                                    doamin.env_to,
+                                                                                    hit.name.decode())]
                     else:
-                        domains[hits.query_name.decode()].append([int(doamin.env_from), int(doamin.env_to),
-                                                              "()", 100, 10, "black", "rgradient:blue",
-                                                              f"arial|7|white|{hit.name.decode()}"])
+                        domains[hits.query_name.decode()].append(generate_domain_layout(doamin.env_from,
+                                                                                        doamin.env_to,
+                                                                                        hit.name.decode()))
 
         tree = Tree(tree_file)
         leaves = tree.get_leaf_names()
