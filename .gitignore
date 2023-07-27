@@ -2,6 +2,7 @@
 input_files
 *.png
 *.hmm
+*.h3m
 __pycache__/
 .DS_Store
 tree2domains_v7.py

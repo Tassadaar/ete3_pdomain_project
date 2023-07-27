@@ -3,9 +3,8 @@ import sys
 
 class Domain:
 
-    def __init__(self, name, parent, c_evalue, start, end,):
+    def __init__(self, name, c_evalue, start, end,):
         self.name = name
-        self.parent = parent
         self.start = start
         self.end = end
         self.score = c_evalue

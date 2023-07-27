@@ -23,9 +23,7 @@ def delete_file(filename):
         print(f"An error occurred while trying to delete the file '{filename}': {e}")
 
 
-def generate_hits_file(sa):
-    hits_file = "toy_topHits.txt"
-
+def generate_hits(sa):
     # unalign SA
     with open(sa) as sa_file:
         write_unaligned_sequences(str(sa_file.read()))
@@ -37,19 +35,12 @@ def generate_hits_file(sa):
         sequences = seq_file.read_block()
 
     # load all the HMMs from an HMM file into a list
-    with plan7.HMMFile("Pfam-A.hmm") as hmm_file:
+    with plan7.HMMFile("Pfam-A.h3m") as hmm_file:
         hmm = list(hmm_file)
 
-    all_hits = list(hmmer.hmmscan(sequences, hmm, cpus=0))
-
-    with open(hits_file, "wb") as output:
-        for hits in all_hits:
-            hits.write(output, "domains", True)
-
-    # clean up temp files
     delete_file("unaligned_toy.fasta")
 
-    return hits_file
+    return hmmer.hmmscan(sequences, hmm, cpus=0)
 
 
 def parse_hits_file(input_file):
@@ -86,11 +77,21 @@ def main():
         sa_file = "input_files/toy.fasta"
         tree_file = "input_files/toy.tree"
 
-        # hits_file = generate_hits_file(sa_file)
+        all_hits = generate_hits(sa_file)
 
-        hits_file = "toy_topHits.txt"
+        domains = {}
 
-        domains = parse_hits_file(hits_file)
+        for hits in all_hits:
+            for hit in hits:
+                for doamin in hit.domains:
+                    if hits.query_name.decode() not in domains.keys():
+                        domains[hits.query_name.decode()] = [[int(doamin.env_from), int(doamin.env_to),
+                                                         "()", 100, 10, "black", "rgradient:blue",
+                                                         f"arial|7|white|{hit.name.decode()}"]]
+                    else:
+                        domains[hits.query_name.decode()].append([int(doamin.env_from), int(doamin.env_to),
+                                                              "()", 100, 10, "black", "rgradient:blue",
+                                                              f"arial|7|white|{hit.name.decode()}"])
 
         tree = Tree(tree_file)
         leaves = tree.get_leaf_names()
