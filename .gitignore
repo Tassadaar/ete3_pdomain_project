@@ -4,3 +4,4 @@ input_files
 *.hmm
 __pycache__/
 .DS_Store
+tree2domains_v7.py

@@ -64,7 +64,11 @@ def parse_hits_file(input_file):
                 continue
 
             words = line.split()
-            domain = Domain(words[0], words[3], words[17], words[18])  # coordinates are assumed aligned
+            domain = Domain(words[0], words[3], words[13], words[17], words[18])  # coordinates are assumed aligned
+
+            if float(domain.score) < 50:  # skipping poor hits
+                continue
+
             if domain.parent != current_parent:
                 all_domains[domain.parent] = [domain.get_motif_format()]
                 current_parent = domain.parent
@@ -82,7 +86,9 @@ def main():
         sa_file = "input_files/toy.fasta"
         tree_file = "input_files/toy.tree"
 
-        hits_file = generate_hits_file(sa_file)
+        # hits_file = generate_hits_file(sa_file)
+
+        hits_file = "toy_topHits.txt"
 
         domains = parse_hits_file(hits_file)
 
@@ -94,12 +100,16 @@ def main():
             all_seqs[seq_record.id] = str(seq_record.seq)
 
         for leaf in leaves:
+
+            if leaf not in domains.keys():  # skipping sequences with no hits
+                continue
+
             seq_face = SeqMotifFace(all_seqs[leaf], seq_format="line", motifs=domains[leaf])
             (tree & leaf).add_face(seq_face, 0, "aligned")
 
-        ts = TreeStyle()
-        ts.show_scale = False
-        tree.render("toy.png", h=50 * len(leaves), tree_style=ts)
+        tree_style = TreeStyle()
+        tree_style.show_scale = False
+        tree.render("toy.png", h=50 * len(leaves), tree_style=tree_style)
 
     except FileNotFoundError:
         print(f"File not found!")
