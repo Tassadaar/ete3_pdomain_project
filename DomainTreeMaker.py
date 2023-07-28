@@ -38,8 +38,6 @@ def generate_hits(sa):
     with plan7.HMMFile("Pfam-A.h3m") as hmm_file:
         hmm = list(hmm_file)
 
-    delete_file("unaligned_toy.fasta")
-
     return hmmer.hmmscan(sequences, hmm, cpus=0)
 
 
@@ -78,7 +76,7 @@ def generate_domain_layout(start, end, name):
 # for now, we are assuming the input file contains aligned amino acid sequences in fasta
 def main():
     try:
-        sa_file = "input_files/toy.fasta"
+        sa_file = "unaligned_toy.fasta"
         tree_file = "input_files/toy.tree"
 
         all_hits = generate_hits(sa_file)
@@ -114,6 +112,9 @@ def main():
 
         tree_style = TreeStyle()
         tree_style.show_scale = False
+
+        delete_file("unaligned_toy.fasta")
+
         tree.render("toy.png", h=50 * len(leaves), tree_style=tree_style)
 
     except FileNotFoundError:
