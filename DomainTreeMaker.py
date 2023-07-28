@@ -70,13 +70,17 @@ def parse_hits_file(input_file):
 
 
 def generate_domain_layout(start, end, name):
-    return [start, end, "()", 100, 10, "black", "rgradient:blue", f"arial|7|white|{name}"]
+
+    if name not in static_colour_dict.keys():
+        static_colour_dict[name] = colour_schemes.pop()
+
+    return [start, end, "()", 100, 10, "black", static_colour_dict[name], f"arial|7|white|{name}"]
 
 
 # for now, we are assuming the input file contains aligned amino acid sequences in fasta
 def main():
     try:
-        sa_file = "unaligned_toy.fasta"
+        sa_file = "input_files/toy.fasta"
         tree_file = "input_files/toy.tree"
 
         all_hits = generate_hits(sa_file)
@@ -86,6 +90,9 @@ def main():
         for hits in all_hits:
             for hit in hits:
                 for doamin in hit.domains:
+                    if doamin.score < 50:
+                        continue
+
                     if hits.query_name.decode() not in domains.keys():
                         domains[hits.query_name.decode()] = [generate_domain_layout(doamin.env_from,
                                                                                     doamin.env_to,
@@ -122,4 +129,6 @@ def main():
 
 
 if __name__ == "__main__":
+    colour_schemes = ["rgradient:blue", "rgradient:red", "rgradient:green", "rgradient:orange", "rgradient:purple"]
+    static_colour_dict = {}
     main()
